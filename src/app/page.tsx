@@ -54,15 +54,21 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-5xl px-6 pb-24">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {FEATURES.map((f, i) => (
-            <div key={i} className="rounded-2xl bg-[#2d5a3d] p-6 text-white">
-              <div className="mb-3">{f.icon}</div>
-              <h3 className="mb-1.5 font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-[#a8c4b0]">{f.body}</p>
-            </div>
-          ))}
+      <section className="border-t border-[#e2ddd6] bg-white">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="grid gap-8 sm:grid-cols-3">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#e8f0eb]">
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="mb-1 font-semibold text-[#1a1a18]">{f.title}</h3>
+                  <p className="text-sm leading-relaxed text-[#777770]">{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -104,7 +110,7 @@ const FEATURES = [
     title: 'GDPR-ready',
     body: "Built for the Swedish market. Contact details are only shared with the recruiter after the referent actively confirms.",
     icon: (
-      <svg className="h-5 w-5 text-[#a8c4b0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="h-5 w-5 text-[#2d5a3d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286z" />
       </svg>
     ),
@@ -113,7 +119,7 @@ const FEATURES = [
     title: 'Zero friction for candidates',
     body: 'Candidates and referents never need to create an account. Just a link and a click.',
     icon: (
-      <svg className="h-5 w-5 text-[#a8c4b0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="h-5 w-5 text-[#2d5a3d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
       </svg>
     ),
@@ -122,7 +128,7 @@ const FEATURES = [
     title: 'Live status tracking',
     body: 'See all your open roles and where each reference stands — sent, confirmed, or declined.',
     icon: (
-      <svg className="h-5 w-5 text-[#a8c4b0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="h-5 w-5 text-[#2d5a3d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
       </svg>
     ),

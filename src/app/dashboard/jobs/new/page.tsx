@@ -87,8 +87,11 @@ export default function NewJobPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <Link href="/dashboard" className="mb-6 inline-flex items-center gap-1 text-sm text-[#777770] hover:text-[#1a1a18]">
-        ← Back to jobs
+      <Link href="/dashboard" className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#777770] transition hover:text-[#1a1a18]">
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to jobs
       </Link>
 
       <div className="rounded-2xl border border-[#e2ddd6] bg-white p-8">

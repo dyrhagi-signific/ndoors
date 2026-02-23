@@ -28,7 +28,8 @@ const emptyReferent = (): Referent => ({
 })
 
 export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
-  const [applicantName, setApplicantName] = useState('')
+  const [applicantFirstName, setApplicantFirstName] = useState('')
+  const [applicantLastName, setApplicantLastName] = useState('')
   const [applicantEmail, setApplicantEmail] = useState('')
   const [referents, setReferents] = useState<Referent[]>([emptyReferent()])
   const [loading, setLoading] = useState(false)
@@ -64,7 +65,7 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
     try {
       await submitReferenceRequest({
         inviteToken,
-        applicantName,
+        applicantName: `${applicantFirstName.trim()} ${applicantLastName.trim()}`.trim(),
         applicantEmail,
         referents: filled,
       })
@@ -103,22 +104,17 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
             <input
               type="text"
               placeholder="First name"
-              value={applicantName.split(' ')[0] ?? ''}
-              onChange={(e) => {
-                const parts = applicantName.split(' ')
-                parts[0] = e.target.value
-                setApplicantName(parts.join(' ').trim())
-              }}
+              value={applicantFirstName}
+              onChange={(e) => setApplicantFirstName(e.target.value)}
               required
+              autoFocus
               className="rounded-xl border border-[#e2ddd6] bg-[#faf8f4] px-3 py-2.5 text-sm placeholder:text-[#777770] focus:border-[#2d5a3d] focus:outline-none focus:ring-1 focus:ring-[#2d5a3d]"
             />
             <input
               type="text"
               placeholder="Last name"
-              onChange={(e) => {
-                const firstName = applicantName.split(' ')[0] ?? ''
-                setApplicantName(`${firstName} ${e.target.value}`.trim())
-              }}
+              value={applicantLastName}
+              onChange={(e) => setApplicantLastName(e.target.value)}
               required
               className="rounded-xl border border-[#e2ddd6] bg-[#faf8f4] px-3 py-2.5 text-sm placeholder:text-[#777770] focus:border-[#2d5a3d] focus:outline-none focus:ring-1 focus:ring-[#2d5a3d]"
             />

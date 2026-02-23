@@ -27,14 +27,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <span className="font-serif text-lg font-bold text-[#2d5a3d]">Ndoors</span>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-[#777770]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2d5a3d] text-xs font-semibold text-white">
+              {profile.first_name[0]}{profile.last_name[0]}
+            </div>
+            <span className="hidden text-sm text-[#777770] sm:block">
               {profile.first_name} {profile.last_name}
             </span>
             <form action={async () => { 'use server'; await signOut() }}>
               <button
                 type="submit"
-                className="text-sm text-[#777770] transition hover:text-[#1a1a18]"
+                className="rounded-lg border border-[#e2ddd6] px-3 py-1.5 text-xs font-medium text-[#777770] transition hover:border-[#ccc] hover:text-[#1a1a18]"
               >
                 Sign out
               </button>
