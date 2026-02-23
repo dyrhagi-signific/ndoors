@@ -3,6 +3,14 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRole = 'recruiter' | 'applicant' | 'referent'
 export type ReferentStatus = 'created' | 'sent' | 'confirmed' | 'declined'
 
+// How strongly a referent's identity has been verified.
+// Each level is additive — higher levels imply lower ones.
+// email   → confirmed email ownership (OTP)
+// phone   → confirmed phone ownership (SMS OTP)
+// linkedin → self-asserted LinkedIn URL (not OAuth; social proof)
+// bankid  → verified national identity via Swedish BankID (strongest)
+export type VerificationLevel = 'none' | 'email' | 'phone' | 'linkedin' | 'bankid'
+
 export interface Database {
   public: {
     Tables: {
@@ -122,6 +130,15 @@ export interface Database {
           confirm_token: string
           confirmed_at: string | null
           created_at: string
+          // Verification — all nullable; filled progressively after the referent confirms
+          email_verified: boolean
+          email_verified_at: string | null
+          phone: string | null
+          phone_verified: boolean
+          phone_verified_at: string | null
+          linkedin_url: string | null          // self-asserted; social proof without OAuth
+          bankid_verified: boolean
+          bankid_verified_at: string | null
         }
         Insert: {
           id?: string
@@ -134,6 +151,14 @@ export interface Database {
           confirm_token: string
           confirmed_at?: string | null
           created_at?: string
+          email_verified?: boolean
+          email_verified_at?: string | null
+          phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
+          linkedin_url?: string | null
+          bankid_verified?: boolean
+          bankid_verified_at?: string | null
         }
         Update: {
           id?: string
@@ -145,7 +170,14 @@ export interface Database {
           status?: ReferentStatus
           confirm_token?: string
           confirmed_at?: string | null
-          created_at?: string
+          email_verified?: boolean
+          email_verified_at?: string | null
+          phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
+          linkedin_url?: string | null
+          bankid_verified?: boolean
+          bankid_verified_at?: string | null
         }
       }
     }
@@ -161,3 +193,13 @@ export type CompanyRow = Database['public']['Tables']['companies']['Row']
 export type JobRow = Database['public']['Tables']['jobs']['Row']
 export type ReferenceRequestRow = Database['public']['Tables']['reference_requests']['Row']
 export type ReferentRow = Database['public']['Tables']['referents']['Row']
+
+// Returns the highest verification level achieved by a referent row.
+// Order of trust (ascending): none → email → phone → linkedin → bankid
+export function verificationLevel(r: Pick<ReferentRow, 'email_verified' | 'phone_verified' | 'linkedin_url' | 'bankid_verified'>): VerificationLevel {
+  if (r.bankid_verified) return 'bankid'
+  if (r.linkedin_url)    return 'linkedin'
+  if (r.phone_verified)  return 'phone'
+  if (r.email_verified)  return 'email'
+  return 'none'
+}

@@ -39,6 +39,31 @@ src/
     └── database.ts                 # TypeScript types for all DB tables
 ```
 
+## Core product principle — Trust
+The whole point of Ndoors is that a recruiter can **trust** the references they receive without having to call every person. A reference from an unverified email address is little better than the applicant writing the text themselves. Verified identity is therefore the product's core differentiator.
+
+Trust is earned progressively. The key insight is that **verification comes after the reference is saved**, so it never blocks the primary flow.
+
+### Referent verification levels (ascending trust)
+| Level | Method | How |
+|---|---|---|
+| `none` | — | Reference saved, identity unknown |
+| `email` | Email OTP | 6-digit code sent to referent's email; confirms they own it |
+| `phone` | SMS OTP | 6-digit code via SMS; confirms phone ownership |
+| `linkedin` | Self-asserted URL | Referent pastes their LinkedIn URL — social proof, not OAuth |
+| `bankid` | Swedish BankID | Cryptographic national identity — highest trust, GDPR-sensitive |
+
+### Verification UX rule
+1. Referent fills in reference → **answer is saved immediately** (status → `confirmed`)
+2. Final screen: *"Do you want to help [applicant first name] stand out? Verify who you are."*
+3. Each method is independent and optional — a referent can do all, some, or none
+4. The recruiter dashboard shows badges per method so trust is visible at a glance
+
+This framing means verification is a gift to the applicant, not a hurdle for the referent.
+
+### Dashboard trust display
+Each referent chip shows small method badges (email ✓, phone ✓, LinkedIn ✓, BankID ✓). The recruiter can decide how much trust they require — e.g. BankID for senior roles, email for junior ones.
+
 ## Database schema (5 tables)
 | Table | Key columns |
 |---|---|
@@ -46,7 +71,7 @@ src/
 | `companies` | id, name, org_number |
 | `jobs` | id, recruiter_id, company_id, title, invite_token (unique), is_active |
 | `reference_requests` | id, job_id, applicant_name, applicant_email |
-| `referents` | id, reference_request_id, first_name, last_name, email, relationship, status (created\|sent\|confirmed\|declined), confirm_token, confirmed_at |
+| `referents` | id, reference_request_id, first_name, last_name, email, relationship, status (created\|sent\|confirmed\|declined), confirm_token, confirmed_at, **email_verified**, **email_verified_at**, **phone**, **phone_verified**, **phone_verified_at**, **linkedin_url**, **bankid_verified**, **bankid_verified_at** |
 
 ## Auth flow
 1. User clicks Google or submits email on `/login`
@@ -74,12 +99,17 @@ src/
 - [x] Email helpers (Resend)
 
 ## What's next
-- [ ] `/dashboard` — recruiter overview (jobs list + referent statuses)
-- [ ] `/dashboard/jobs/new` — create job, generate + copy invite link
-- [ ] `/ref/[invite_token]` — applicant flow (no auth, submit referent contacts)
-- [ ] `/confirm/[confirm_token]` — referent confirm/decline page
+- [x] `/dashboard` — recruiter overview (jobs list + referent statuses)
+- [x] `/dashboard/jobs/new` — create job, generate + copy invite link
+- [x] `/ref/[invite_token]` — applicant flow (no auth, submit referent contacts)
+- [ ] `/confirm/[confirm_token]` — 2-step referent flow: (1) answer + confirm/decline, (2) optional verification upsell
+- [ ] Email OTP verification for referents (Resend → 6-digit code, store in short-lived table)
+- [ ] SMS OTP (Twilio or Vonage) for phone verification
+- [ ] BankID integration (Freja eID or Signicat API — requires BankID partner agreement)
+- [ ] Verification badges on dashboard referent chips
 - [ ] Profile/onboarding step for new users after first login
 - [ ] RLS policies enabled in Supabase (see spec for SQL)
+- [ ] `ALTER TABLE referents ADD COLUMN ...` migration for verification fields (see types/database.ts)
 
 ## Env vars
 ```
@@ -88,6 +118,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=        # server only
 RESEND_API_KEY=                   # server only
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Verification (future)
+TWILIO_ACCOUNT_SID=               # SMS OTP — server only
+TWILIO_AUTH_TOKEN=                # server only
+TWILIO_FROM_NUMBER=               # server only
+BANKID_API_URL=                   # BankID partner endpoint — server only
+BANKID_CLIENT_CERT=               # mTLS cert required by BankID — server only
 ```
 
 ## Spec file

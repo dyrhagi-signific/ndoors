@@ -57,7 +57,8 @@ export async function confirmReferent(confirmToken: string) {
     }
   }
 
-  redirect(`/confirm/${confirmToken}/done?outcome=confirmed`)
+  // After confirming, take the referent to the optional verification step.
+  redirect(`/confirm/${confirmToken}/verify`)
 }
 
 export async function declineReferent(confirmToken: string) {
@@ -69,7 +70,8 @@ export async function declineReferent(confirmToken: string) {
 
   if (error || !referent) throw new Error('Referent not found')
   if (referent.status !== 'sent' && referent.status !== 'created') {
-    redirect(`/confirm/${confirmToken}/done?outcome=${referent.status}`)
+    // Already answered — just show the outcome screen on the base page.
+    redirect(`/confirm/${confirmToken}`)
   }
 
   await supabaseAdmin
@@ -77,5 +79,24 @@ export async function declineReferent(confirmToken: string) {
     .update({ status: 'declined' })
     .eq('id', referent.id)
 
-  redirect(`/confirm/${confirmToken}/done?outcome=declined`)
+  redirect(`/confirm/${confirmToken}`)
+}
+
+export async function saveLinkedIn(confirmToken: string, linkedinUrl: string) {
+  const { data: referent, error } = await supabaseAdmin
+    .from('referents')
+    .select('id, status')
+    .eq('confirm_token', confirmToken)
+    .maybeSingle()
+
+  if (error || !referent) throw new Error('Referent not found')
+  if (referent.status !== 'confirmed') throw new Error('Reference not confirmed')
+
+  // Basic URL sanity check — must contain linkedin.com
+  if (!linkedinUrl.includes('linkedin.com')) throw new Error('Please enter a valid LinkedIn URL')
+
+  await supabaseAdmin
+    .from('referents')
+    .update({ linkedin_url: linkedinUrl })
+    .eq('id', referent.id)
 }
