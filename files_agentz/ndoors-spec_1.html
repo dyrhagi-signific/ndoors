@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ndoors — Technical Spec</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --white: #ffffff;
+    --border: #e2ddd6;
+    --accent: #2d5a3d;
+    --accent-light: #e8f0eb;
+    --accent2: #c8763a;
+    --text: #1a1a18;
+    --muted: #777770;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --tag-bg: #ede9e3;
+    --surface: #faf8f4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* Layout */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 240px;
+    height: 100vh;
+    background: var(--white);
+    border-right: 1.5px solid var(--border);
+    padding: 32px 20px;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .main {
+    margin-left: 240px;
+    padding: 56px 60px 100px;
+    max-width: 900px;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 32px 24px 80px; }
+  }
+
+  /* Sidebar */
+  .sidebar-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-logo-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .nav-section {
+    margin-bottom: 20px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    padding-left: 8px;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 5px 8px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.1s, color 0.1s;
+    line-height: 1.4;
+  }
+
+  .nav-link:hover { background: var(--accent-light); color: var(--accent); }
+  .nav-link.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+  /* Header */
+  .doc-header { margin-bottom: 60px; border-bottom: 1.5px solid var(--border); padding-bottom: 40px; }
+
+  .doc-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(34px, 5vw, 50px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  h1 em { font-style: italic; color: var(--accent); }
+
+  .doc-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .doc-meta-item {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .doc-meta-item strong { color: var(--text); font-weight: 500; }
+
+  /* Section */
+  .section { margin-bottom: 64px; }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-top: 8px;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    margin-top: 28px;
+  }
+
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+
+  a { color: var(--accent); }
+
+  /* Callout */
+  .callout {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #2a4a35;
+  }
+
+  .callout strong { font-weight: 600; }
+
+  .callout.warning {
+    background: #fff8ed;
+    border-color: var(--accent2);
+    color: #6b3a10;
+  }
+
+  /* Code */
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--code-text);
+  }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: #ede9e3;
+    color: #5a3e28;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  .code-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* SQL highlighting */
+  .kw { color: #cba6f7; }
+  .str { color: #a6e3a1; }
+  .cmt { color: #6c7086; font-style: italic; }
+  .typ { color: #89dceb; }
+  .fn { color: #89b4fa; }
+  .num { color: #fab387; }
+
+  /* Tables */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+    background: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+
+  .data-table th {
+    background: var(--surface);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface); }
+
+  .td-name { font-family: 'DM Mono', monospace; font-size: 12px; color: #5a3e28; font-weight: 500; }
+  .td-type { font-family: 'DM Mono', monospace; font-size: 12px; color: #5c6bc0; }
+  .td-note { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-pk { background: #fde68a; color: #78350f; }
+  .badge-fk { background: #dbeafe; color: #1e40af; }
+  .badge-req { background: #dcfce7; color: #166534; }
+  .badge-opt { background: #f3f4f6; color: #6b7280; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 20px 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .flow-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .flow-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .flow-dot.recruiter { background: #2d5a3d; }
+  .flow-dot.applicant { background: #c8763a; }
+  .flow-dot.referent { background: #5c6bc0; }
+  .flow-dot.system { background: #888; }
+
+  .flow-connector {
+    width: 2px;
+    height: 28px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  .flow-content {
+    padding: 6px 0 28px;
+    flex: 1;
+  }
+
+  .flow-actor {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .flow-actor.recruiter { color: #2d5a3d; }
+  .flow-actor.applicant { color: #c8763a; }
+  .flow-actor.referent { color: #5c6bc0; }
+  .flow-actor.system { color: #888; }
+
+  .flow-desc {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .flow-note { font-size: 12px; color: var(--muted); }
+
+  /* Status pills */
+  .status-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+
+  .status-pill {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .status-arrow { color: var(--muted); font-size: 16px; }
+
+  .s-created { background: #f3f4f6; color: #6b7280; border: 1.5px solid #d1d5db; }
+  .s-sent { background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; }
+  .s-confirmed { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+  .s-declined { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5; }
+
+  /* Stack card */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .stack-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .stack-card-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .stack-card-role {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stack-card-why {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Step list */
+  .step-list { list-style: none; counter-reset: steps; margin: 16px 0; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 18px;
+    align-items: flex-start;
+  }
+
+  .step-list li::before {
+    content: counter(steps);
+    background: var(--text);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .step-list li div { flex: 1; }
+  .step-list li strong { font-weight: 600; display: block; margin-bottom: 2px; font-size: 14px; }
+  .step-list li span { font-size: 13px; color: var(--muted); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1.5px solid var(--border); margin: 48px 0; }
+
+  /* Env table */
+  .env-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .env-row:last-child { border-bottom: none; }
+  .env-key { font-family: 'DM Mono', monospace; color: #5a3e28; font-size: 12px; }
+  .env-desc { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-dot"></div>
+    Ndoors
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a href="#overview" class="nav-link">Tech Stack</a>
+    <a href="#architecture" class="nav-link">Architecture</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Data Model</div>
+    <a href="#users" class="nav-link">users</a>
+    <a href="#companies" class="nav-link">companies</a>
+    <a href="#jobs" class="nav-link">jobs</a>
+    <a href="#reference_requests" class="nav-link">reference_requests</a>
+    <a href="#referents" class="nav-link">referents</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">User Flows</div>
+    <a href="#flow-status" class="nav-link">Status lifecycle</a>
+    <a href="#flow-recruiter" class="nav-link">Recruiter flow</a>
+    <a href="#flow-applicant" class="nav-link">Applicant flow</a>
+    <a href="#flow-referent" class="nav-link">Referent flow</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Setup Guide</div>
+    <a href="#setup-repo" class="nav-link">1. Repo & tooling</a>
+    <a href="#setup-supabase" class="nav-link">2. Supabase</a>
+    <a href="#setup-auth" class="nav-link">3. Auth</a>
+    <a href="#setup-email" class="nav-link">4. Email</a>
+    <a href="#setup-deploy" class="nav-link">5. Deploy</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a href="#env-vars" class="nav-link">Env variables</a>
+    <a href="#urls" class="nav-link">URL structure</a>
+    <a href="#gdpr" class="nav-link">GDPR notes</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-label">Technical Specification · MVP v1.0</div>
+    <h1>Ndoors — <em>Build Guide</em></h1>
+    <p style="color: var(--muted); max-width: 560px; font-size: 14px;">A complete technical reference for building the Ndoors MVP: reference management for modern hiring. Covers data model, user flows, and step-by-step project setup.</p>
+    <div class="doc-meta">
+      <div class="doc-meta-item">Stack: <strong>Next.js · Supabase · Vercel · Resend</strong></div>
+      <div class="doc-meta-item">Market: <strong>Sweden (GDPR applies)</strong></div>
+      <div class="doc-meta-item">Stage: <strong>Early MVP</strong></div>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="section" id="overview">
+    <h2>Tech Stack</h2>
+    <p>Every tool is chosen to maximise speed of development while being production-ready from day one. All services have generous free tiers to get you started.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-card-name">Next.js 14</div>
+        <div class="stack-card-role">Frontend + Backend</div>
+        <div class="stack-card-why">App Router, server components, API routes — everything in one repo. Mobile-first by default with Tailwind CSS.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-name">Supabase</div>
+        <div class="stack-card-role">Database + Auth</div>
+        <div class="stack-card-why">Postgres database, Google + email auth, row-level security, and real-time updates all included. Swedish data region available (eu-north-1).</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-name">Resend</div>
+        <div class="stack-card-role">Transactional Email</div>
+        <div class="stack-card-why">Simple API, React Email templates, excellent deliverability. Free for 3,000 emails/month — plenty for MVP.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-name">Vercel</div>
+        <div class="stack-card-role">Hosting + CI/CD</div>
+        <div class="stack-card-why">Push to GitHub → auto-deploy. Preview URLs for every PR. Free hobby tier works for early users.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-name">Tailwind CSS</div>
+        <div class="stack-card-role">Styling</div>
+        <div class="stack-card-why">Utility-first styling. Fast to build mobile-first layouts. Pairs perfectly with Next.js.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-name">Posthog</div>
+        <div class="stack-card-role">Analytics</div>
+        <div class="stack-card-why">Free tier, GDPR-compliant, can self-host on EU servers. Track your funnel from day one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture -->
+  <div class="section" id="architecture">
+    <h2>Architecture Overview</h2>
+    <p>The app is a single Next.js project. The frontend (pages/components) and the backend (API routes) all live together. Supabase acts as your database, auth provider, and storage layer.</p>
+
+    <div class="code-label">Project folder structure</div>
+    <pre><code>ndoors/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── dashboard/              <span class="cmt"># Recruiter dashboard</span>
+│   │   ├── page.tsx
+│   │   └── jobs/[jobId]/page.tsx
+│   ├── ref/
+│   │   └── [token]/page.tsx    <span class="cmt"># Applicant unique link landing</span>
+│   ├── confirm/
+│   │   └── [token]/page.tsx    <span class="cmt"># Referent confirmation page</span>
+│   └── api/
+│       ├── jobs/route.ts
+│       ├── references/route.ts
+│       └── referents/confirm/route.ts
+├── components/
+│   ├── ui/                     <span class="cmt"># Buttons, inputs, status pills</span>
+│   └── forms/
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts           <span class="cmt"># Browser-side Supabase client</span>
+│   │   └── server.ts           <span class="cmt"># Server-side Supabase client</span>
+│   └── email/
+│       └── send.ts             <span class="cmt"># Resend email helpers</span>
+├── types/
+│   └── database.ts             <span class="cmt"># Auto-generated from Supabase</span>
+└── middleware.ts               <span class="cmt"># Auth protection on routes</span></code></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Data Model -->
+  <div class="section">
+    <h2>Data Model</h2>
+    <p>Five tables cover the full MVP. Below is each table with field names, types, and notes. You'll create these in Supabase's SQL editor.</p>
+
+    <div class="callout">
+      <strong>Tip:</strong> Set your Supabase project region to <code>eu-north-1</code> (Stockholm) when creating the project. This keeps data in the EU for GDPR compliance and reduces latency for Swedish users.
+    </div>
+
+    <!-- users -->
+    <h3 id="users">users</h3>
+    <p>Extends Supabase's built-in <code>auth.users</code> table. One row per user, linked by UUID. The <code>role</code> field determines which flow they see after login.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-name">id</td><td class="td-type">uuid</td><td><span class="badge badge-pk">PK</span></td><td class="td-note">References <code>auth.users.id</code>. Set automatically by Supabase auth.</td></tr>
+        <tr><td class="td-name">role</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">One of: <code>recruiter</code> · <code>applicant</code> · <code>referent</code>. Set at signup.</td></tr>
+        <tr><td class="td-name">first_name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note"></td></tr>
+        <tr><td class="td-name">last_name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note"></td></tr>
+        <tr><td class="td-name">email</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Synced from <code>auth.users.email</code></td></tr>
+        <tr><td class="td-name">company_id</td><td class="td-type">uuid</td><td><span class="badge badge-opt">Optional</span></td><td class="td-note"><span class="badge badge-fk">FK</span> → companies. Only for recruiters.</td></tr>
+        <tr><td class="td-name">job_title</td><td class="td-type">text</td><td><span class="badge badge-opt">Optional</span></td><td class="td-note">Self-reported role, e.g. "Talent Acquisition Manager"</td></tr>
+        <tr><td class="td-name">created_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>now()</code></td></tr>
+      </tbody>
+    </table>
+
+    <!-- companies -->
+    <h3 id="companies">companies</h3>
+    <p>Swedish companies. For MVP, populate manually or via a simple search-and-select from a flat list. A full Bolagsverket / allabolag.se integration can come later.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-name">id</td><td class="td-type">uuid</td><td><span class="badge badge-pk">PK</span></td><td class="td-note">Default: <code>gen_random_uuid()</code></td></tr>
+        <tr><td class="td-name">name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Company name, e.g. "Klarna AB"</td></tr>
+        <tr><td class="td-name">org_number</td><td class="td-type">text</td><td><span class="badge badge-opt">Optional</span></td><td class="td-note">Swedish organisationsnummer (10 digits). Useful for deduplication later.</td></tr>
+        <tr><td class="td-name">created_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>now()</code></td></tr>
+      </tbody>
+    </table>
+
+    <!-- jobs -->
+    <h3 id="jobs">jobs</h3>
+    <p>Each job posting created by a recruiter. One job generates one applicant invite link. A recruiter can have many jobs.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-name">id</td><td class="td-type">uuid</td><td><span class="badge badge-pk">PK</span></td><td class="td-note">Default: <code>gen_random_uuid()</code></td></tr>
+        <tr><td class="td-name">recruiter_id</td><td class="td-type">uuid</td><td><span class="badge badge-req">Required</span></td><td class="td-note"><span class="badge badge-fk">FK</span> → users.id. The recruiter who created this job.</td></tr>
+        <tr><td class="td-name">company_id</td><td class="td-type">uuid</td><td><span class="badge badge-req">Required</span></td><td class="td-note"><span class="badge badge-fk">FK</span> → companies.id. Auto-filled from recruiter's profile.</td></tr>
+        <tr><td class="td-name">title</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">e.g. "Senior Product Designer"</td></tr>
+        <tr><td class="td-name">invite_token</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Unique random string, URL-safe. Generate with <code>nanoid()</code>. Used in the applicant link: <code>/ref/[invite_token]</code></td></tr>
+        <tr><td class="td-name">is_active</td><td class="td-type">boolean</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>true</code>. Set false to deactivate the invite link.</td></tr>
+        <tr><td class="td-name">created_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>now()</code></td></tr>
+      </tbody>
+    </table>
+
+    <!-- reference_requests -->
+    <h3 id="reference_requests">reference_requests</h3>
+    <p>The core table — one row per applicant responding to a job invite. Tracks who the applicant is and links to their referents.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-name">id</td><td class="td-type">uuid</td><td><span class="badge badge-pk">PK</span></td><td class="td-note">Default: <code>gen_random_uuid()</code></td></tr>
+        <tr><td class="td-name">job_id</td><td class="td-type">uuid</td><td><span class="badge badge-req">Required</span></td><td class="td-note"><span class="badge badge-fk">FK</span> → jobs.id</td></tr>
+        <tr><td class="td-name">applicant_name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Entered by applicant on the landing page. Not necessarily a Supabase user.</td></tr>
+        <tr><td class="td-name">applicant_email</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">For the recruiter to identify who submitted.</td></tr>
+        <tr><td class="td-name">created_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>now()</code></td></tr>
+      </tbody>
+    </table>
+
+    <!-- referents -->
+    <h3 id="referents">referents</h3>
+    <p>One row per referent added by an applicant. Multiple referents per reference_request. This table drives the status tracking the recruiter sees.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-name">id</td><td class="td-type">uuid</td><td><span class="badge badge-pk">PK</span></td><td class="td-note">Default: <code>gen_random_uuid()</code></td></tr>
+        <tr><td class="td-name">reference_request_id</td><td class="td-type">uuid</td><td><span class="badge badge-req">Required</span></td><td class="td-note"><span class="badge badge-fk">FK</span> → reference_requests.id</td></tr>
+        <tr><td class="td-name">first_name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Entered by applicant</td></tr>
+        <tr><td class="td-name">last_name</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Entered by applicant</td></tr>
+        <tr><td class="td-name">email</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Used to send the confirmation email</td></tr>
+        <tr><td class="td-name">relationship</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">e.g. "Former manager", "Colleague". Free text or dropdown.</td></tr>
+        <tr><td class="td-name">status</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Enum: <code>created</code> · <code>sent</code> · <code>confirmed</code> · <code>declined</code></td></tr>
+        <tr><td class="td-name">confirm_token</td><td class="td-type">text</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Unique random string. Used in referent confirmation link: <code>/confirm/[confirm_token]</code></td></tr>
+        <tr><td class="td-name">confirmed_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-opt">Optional</span></td><td class="td-note">Set when referent clicks confirm.</td></tr>
+        <tr><td class="td-name">created_at</td><td class="td-type">timestamptz</td><td><span class="badge badge-req">Required</span></td><td class="td-note">Default: <code>now()</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Full SQL to create all tables</h3>
+    <div class="code-label">Supabase SQL Editor → New Query</div>
+    <pre><code><span class="cmt">-- Run this in your Supabase SQL Editor</span>
+
+<span class="cmt">-- 1. Public user profiles (extends auth.users)</span>
+<span class="kw">CREATE TABLE</span> public.users (
+  id          <span class="typ">uuid</span> <span class="kw">REFERENCES</span> auth.users(<span class="str">id</span>) <span class="kw">ON DELETE CASCADE PRIMARY KEY</span>,
+  role        <span class="typ">text</span> <span class="kw">NOT NULL CHECK</span> (role <span class="kw">IN</span> (<span class="str">'recruiter'</span>, <span class="str">'applicant'</span>, <span class="str">'referent'</span>)),
+  first_name  <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  last_name   <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  email       <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  company_id  <span class="typ">uuid</span>,
+  job_title   <span class="typ">text</span>,
+  created_at  <span class="typ">timestamptz</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+);
+
+<span class="cmt">-- 2. Companies</span>
+<span class="kw">CREATE TABLE</span> public.companies (
+  id          <span class="typ">uuid</span> <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid</span>() <span class="kw">PRIMARY KEY</span>,
+  name        <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  org_number  <span class="typ">text</span>,
+  created_at  <span class="typ">timestamptz</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+);
+
+<span class="kw">ALTER TABLE</span> public.users
+  <span class="kw">ADD CONSTRAINT</span> fk_company
+  <span class="kw">FOREIGN KEY</span> (company_id) <span class="kw">REFERENCES</span> companies(id);
+
+<span class="cmt">-- 3. Jobs</span>
+<span class="kw">CREATE TABLE</span> public.jobs (
+  id            <span class="typ">uuid</span> <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid</span>() <span class="kw">PRIMARY KEY</span>,
+  recruiter_id  <span class="typ">uuid</span> <span class="kw">NOT NULL REFERENCES</span> public.users(id),
+  company_id    <span class="typ">uuid</span> <span class="kw">NOT NULL REFERENCES</span> public.companies(id),
+  title         <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  invite_token  <span class="typ">text</span> <span class="kw">NOT NULL UNIQUE</span>,
+  is_active     <span class="typ">boolean</span> <span class="kw">DEFAULT</span> <span class="num">true</span>,
+  created_at    <span class="typ">timestamptz</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+);
+
+<span class="cmt">-- 4. Reference requests (one per applicant per job)</span>
+<span class="kw">CREATE TABLE</span> public.reference_requests (
+  id               <span class="typ">uuid</span> <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid</span>() <span class="kw">PRIMARY KEY</span>,
+  job_id           <span class="typ">uuid</span> <span class="kw">NOT NULL REFERENCES</span> public.jobs(id),
+  applicant_name   <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  applicant_email  <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  created_at       <span class="typ">timestamptz</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+);
+
+<span class="cmt">-- 5. Referents</span>
+<span class="kw">CREATE TABLE</span> public.referents (
+  id                   <span class="typ">uuid</span> <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid</span>() <span class="kw">PRIMARY KEY</span>,
+  reference_request_id <span class="typ">uuid</span> <span class="kw">NOT NULL REFERENCES</span> public.reference_requests(id),
+  first_name           <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  last_name            <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  email                <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  relationship         <span class="typ">text</span> <span class="kw">NOT NULL</span>,
+  status               <span class="typ">text</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'created'</span>
+                         <span class="kw">CHECK</span> (status <span class="kw">IN</span> (<span class="str">'created'</span>,<span class="str">'sent'</span>,<span class="str">'confirmed'</span>,<span class="str">'declined'</span>)),
+  confirm_token        <span class="typ">text</span> <span class="kw">NOT NULL UNIQUE</span>,
+  confirmed_at         <span class="typ">timestamptz</span>,
+  created_at           <span class="typ">timestamptz</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+);</code></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- User Flows -->
+  <div class="section">
+    <h2>User Flows</h2>
+
+    <h3 id="flow-status">Reference Status Lifecycle</h3>
+    <p>Every referent row moves through these states. The recruiter's dashboard reflects this in real time.</p>
+
+    <div class="status-flow">
+      <span class="status-pill s-created">Created</span>
+      <span class="status-arrow">→</span>
+      <span class="status-pill s-sent">Sent</span>
+      <span class="status-arrow">→</span>
+      <span class="status-pill s-confirmed">Confirmed</span>
+    </div>
+    <div class="status-flow" style="margin-top: 4px;">
+      <span class="status-pill s-sent" style="opacity:0.4">Sent</span>
+      <span class="status-arrow">→</span>
+      <span class="status-pill s-declined">Declined</span>
+    </div>
+
+    <p style="margin-top: 14px; font-size: 13px; color: var(--muted);">
+      <strong style="color: var(--text);">Created</strong> — applicant has added the referent's contact info but email hasn't sent yet.<br>
+      <strong style="color: var(--text);">Sent</strong> — confirmation email has been dispatched to the referent.<br>
+      <strong style="color: var(--text);">Confirmed</strong> — referent clicked "Yes" in their email. Recruiter is notified and contact details are unlocked.<br>
+      <strong style="color: var(--text);">Declined</strong> — referent clicked "Decline". Applicant is notified by email.
+    </p>
+
+    <h3 id="flow-recruiter">Recruiter Flow</h3>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot recruiter">R</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor recruiter">Recruiter</div>
+          <div class="flow-desc">Signs up → selects "Recruiting Manager" → fills in profile</div>
+          <div class="flow-note">Name, email, company (search or create), job title. Redirected to dashboard.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot recruiter">R</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor recruiter">Recruiter</div>
+          <div class="flow-desc">Creates a job → system generates invite link</div>
+          <div class="flow-note">Enters job title. System creates a <code>jobs</code> row with a unique <code>invite_token</code>. The link <code>ndoors.se/ref/[token]</code> is shown and can be copied.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot recruiter">R</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor recruiter">Recruiter</div>
+          <div class="flow-desc">Sends the invite link to the job applicant</div>
+          <div class="flow-note">Via email, WhatsApp, Slack — any channel. Ndoors doesn't need to handle this in MVP.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot recruiter">R</div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor recruiter">Recruiter</div>
+          <div class="flow-desc">Monitors status in dashboard → contacts referent once Confirmed</div>
+          <div class="flow-note">Dashboard shows applicant name, referent name, and status pill per referent. Email + phone (if provided) revealed on Confirmed.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="flow-applicant">Applicant Flow</h3>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot applicant">A</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor applicant">Applicant</div>
+          <div class="flow-desc">Opens unique link → sees job context</div>
+          <div class="flow-note">Page shows: "You've been asked to provide references for [Job Title] at [Company]." No login required — they enter their name + email to identify themselves.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot applicant">A</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor applicant">Applicant</div>
+          <div class="flow-desc">Adds 1–3 referent contacts</div>
+          <div class="flow-note">For each referent: first name, last name, email, relationship. Simple mobile-optimised repeating form. "Add another" button.</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot applicant">A</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor applicant">Applicant</div>
+          <div class="flow-desc">Submits → confirmation screen</div>
+          <div class="flow-note">System creates <code>reference_request</code> and <code>referents</code> rows. Fires emails to all referents. Shows "We've sent a confirmation request to your references."</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot system">S</div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor system">System</div>
+          <div class="flow-desc">Referent status updates trickle back as recruiter notifications</div>
+          <div class="flow-note">Applicant can optionally receive a notification too (nice-to-have for MVP). Recruiter always gets an email on Confirmed.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="flow-referent">Referent Flow</h3>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot referent">F</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor referent">Referent</div>
+          <div class="flow-desc">Receives email: "[Applicant Name] has listed you as a reference"</div>
+          <div class="flow-note">Email includes: who is asking, for what role at what company, and a prominent CTA button: "Confirm I'm happy to be a reference".</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot referent">F</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor referent">Referent</div>
+          <div class="flow-desc">Opens confirmation page at <code>/confirm/[token]</code></div>
+          <div class="flow-note">Page shows context (who, what job, what company). Short privacy note: "Your contact details will only be shared with [Recruiter Name] at [Company] for this role."</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot referent">F</div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-actor referent">Referent</div>
+          <div class="flow-desc">Clicks Confirm or Decline</div>
+          <div class="flow-note"><strong>Confirm:</strong> status → <code>confirmed</code>, <code>confirmed_at</code> set, recruiter notified by email.<br><strong>Decline:</strong> status → <code>declined</code>, applicant notified by email. No further action needed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Setup Guide -->
+  <div class="section">
+    <h2>Setup Guide</h2>
+    <p>Follow these steps in order. Estimated time: 2–3 hours to have a running local environment with auth and database working.</p>
+
+    <h3 id="setup-repo">1. Repo & Tooling</h3>
+
+    <div class="code-label">Terminal</div>
+    <pre><code><span class="cmt"># Install Node.js 20+ if you haven't already (use nvm)</span>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+nvm use 20
+
+<span class="cmt"># Create the Next.js project</span>
+npx create-next-app@latest ndoors \
+  --typescript \
+  --tailwind \
+  --eslint \
+  --app \
+  --src-dir
+
+cd ndoors
+
+<span class="cmt"># Install core dependencies</span>
+npm install @supabase/supabase-js @supabase/ssr
+npm install resend
+npm install nanoid           <span class="cmt"># for generating unique tokens</span>
+npm install @radix-ui/react-dialog @radix-ui/react-select  <span class="cmt"># UI primitives (optional)</span></code></pre>
+
+    <h3 id="setup-supabase">2. Supabase Project</h3>
+
+    <ol class="step-list">
+      <li>
+        <div>
+          <strong>Create a new project at supabase.com</strong>
+          <span>Choose region: <strong>eu-north-1 (Stockholm)</strong>. Save your database password somewhere safe.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Open the SQL Editor and run the table creation SQL</strong>
+          <span>Copy the full SQL block from the Data Model section above. Run it in Supabase → SQL Editor → New Query.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Enable Row Level Security (RLS) on all tables</strong>
+          <span>In Supabase → Table Editor → each table → RLS → Enable. Then add policies (see below).</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Add RLS policies</strong>
+          <span>At minimum: recruiters can only see their own jobs and reference requests. Use the SQL below.</span>
+        </div>
+      </li>
+    </ol>
+
+    <div class="code-label">RLS policies — run in SQL Editor</div>
+    <pre><code><span class="cmt">-- Recruiters can only see their own jobs</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"Recruiters see own jobs"</span> <span class="kw">ON</span> jobs
+  <span class="kw">FOR ALL USING</span> (recruiter_id = auth.uid());
+
+<span class="cmt">-- Recruiters can see reference_requests for their jobs</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"Recruiters see own reference requests"</span> <span class="kw">ON</span> reference_requests
+  <span class="kw">FOR SELECT USING</span> (
+    job_id <span class="kw">IN</span> (<span class="kw">SELECT</span> id <span class="kw">FROM</span> jobs <span class="kw">WHERE</span> recruiter_id = auth.uid())
+  );
+
+<span class="cmt">-- Public: anyone with the token can look up a job (for the applicant landing page)</span>
+<span class="cmt">-- This is safe because invite_token is unguessable</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"Public job lookup by token"</span> <span class="kw">ON</span> jobs
+  <span class="kw">FOR SELECT USING</span> (<span class="num">true</span>);
+
+<span class="cmt">-- Public: anyone can look up a referent by confirm_token (for confirmation page)</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"Public referent lookup by token"</span> <span class="kw">ON</span> referents
+  <span class="kw">FOR SELECT USING</span> (<span class="num">true</span>);</code></pre>
+
+    <div class="callout warning">
+      <strong>Note:</strong> The "public lookup by token" policies are safe because the tokens are generated with <code>nanoid()</code> and are effectively unguessable. They're not exposed in the UI — only sent directly to the relevant person.
+    </div>
+
+    <h3 id="setup-auth">3. Authentication</h3>
+
+    <ol class="step-list">
+      <li>
+        <div>
+          <strong>Enable Google OAuth in Supabase</strong>
+          <span>Supabase → Authentication → Providers → Google → Enable. You'll need to create a Google OAuth app at console.cloud.google.com and paste in the Client ID + Secret.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Enable Email/Password auth</strong>
+          <span>Supabase → Authentication → Providers → Email → Enable. Turn off "Confirm email" for fast local testing (re-enable before launch).</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Create the Supabase client helpers in your project</strong>
+          <span>Two files needed — one for server-side (API routes, server components) and one for browser-side (client components).</span>
+        </div>
+      </li>
+    </ol>
+
+    <div class="code-label">lib/supabase/server.ts</div>
+    <pre><code><span class="kw">import</span> { createServerClient } <span class="kw">from</span> <span class="str">'@supabase/ssr'</span>
+<span class="kw">import</span> { cookies } <span class="kw">from</span> <span class="str">'next/headers'</span>
+
+<span class="kw">export function</span> <span class="fn">createClient</span>() {
+  <span class="kw">const</span> cookieStore = <span class="fn">cookies</span>()
+  <span class="kw">return</span> <span class="fn">createServerClient</span>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll() { <span class="kw">return</span> cookieStore.<span class="fn">getAll</span>() },
+                 setAll(cs) { cs.<span class="fn">forEach</span>(({name,value,...opts}) => cookieStore.<span class="fn">set</span>(name,value,opts)) } } }
+  )
+}</code></pre>
+
+    <div class="code-label">lib/supabase/client.ts</div>
+    <pre><code><span class="kw">import</span> { createBrowserClient } <span class="kw">from</span> <span class="str">'@supabase/ssr'</span>
+
+<span class="kw">export function</span> <span class="fn">createClient</span>() {
+  <span class="kw">return</span> <span class="fn">createBrowserClient</span>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}</code></pre>
+
+    <h3 id="setup-email">4. Transactional Email with Resend</h3>
+
+    <ol class="step-list">
+      <li><div><strong>Sign up at resend.com and get your API key</strong><span>Free tier = 3,000 emails/month. Add and verify your sending domain (e.g. <code>mail.ndoors.se</code>).</span></div></li>
+      <li><div><strong>Create the email send helper</strong><span>See code below.</span></div></li>
+    </ol>
+
+    <div class="code-label">lib/email/send.ts</div>
+    <pre><code><span class="kw">import</span> { Resend } <span class="kw">from</span> <span class="str">'resend'</span>
+<span class="kw">const</span> resend = <span class="kw">new</span> <span class="fn">Resend</span>(process.env.RESEND_API_KEY)
+
+<span class="kw">export async function</span> <span class="fn">sendReferentInvite</span>({
+  referentEmail, referentName, applicantName, jobTitle, companyName, confirmToken
+}: {
+  referentEmail: <span class="typ">string</span>, referentName: <span class="typ">string</span>, applicantName: <span class="typ">string</span>,
+  jobTitle: <span class="typ">string</span>, companyName: <span class="typ">string</span>, confirmToken: <span class="typ">string</span>
+}) {
+  <span class="kw">const</span> confirmUrl = <span class="str">`${process.env.NEXT_PUBLIC_APP_URL}/confirm/${confirmToken}`</span>
+
+  <span class="kw">return</span> resend.emails.<span class="fn">send</span>({
+    from: <span class="str">'Ndoors &lt;no-reply@mail.ndoors.se&gt;'</span>,
+    to: referentEmail,
+    subject: <span class="str">`${applicantName} has listed you as a reference`</span>,
+    html: <span class="str">`
+      &lt;p&gt;Hi ${referentName},&lt;/p&gt;
+      &lt;p&gt;${applicantName} is applying for the role of &lt;strong&gt;${jobTitle}&lt;/strong&gt;
+         at &lt;strong&gt;${companyName}&lt;/strong&gt; and has listed you as a reference.&lt;/p&gt;
+      &lt;p&gt;
+        &lt;a href="${confirmUrl}" style="background:#2d5a3d;color:white;padding:12px 24px;
+           border-radius:6px;text-decoration:none;display:inline-block"&gt;
+          Confirm I'm happy to be a reference
+        &lt;/a&gt;
+      &lt;/p&gt;
+      &lt;p style="color:#888;font-size:13px"&gt;
+        You can also decline at the link above if you'd prefer not to be contacted.
+      &lt;/p&gt;
+    `</span>
+  })
+}</code></pre>
+
+    <h3 id="setup-deploy">5. Deploy to Vercel</h3>
+
+    <ol class="step-list">
+      <li><div><strong>Push your project to GitHub</strong><span><code>git init && git add . && git commit -m "init" && git remote add origin [your-repo] && git push</code></span></div></li>
+      <li><div><strong>Import the repo in vercel.com → New Project</strong><span>Vercel auto-detects Next.js. Select your repo and click Deploy.</span></div></li>
+      <li><div><strong>Add all environment variables in Vercel → Settings → Environment Variables</strong><span>See the full list in the Env Variables section below.</span></div></li>
+      <li><div><strong>Set your custom domain</strong><span>Vercel → Domains → Add <code>ndoors.se</code>. Update your DNS records as instructed.</span></div></li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Reference -->
+  <div class="section">
+    <h2>Reference</h2>
+
+    <h3 id="env-vars">Environment Variables</h3>
+    <p>Create a <code>.env.local</code> file in your project root. Never commit this file — it's already in <code>.gitignore</code> by default.</p>
+
+    <div style="background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 16px; margin: 16px 0;">
+      <div class="env-row">
+        <div class="env-key">NEXT_PUBLIC_SUPABASE_URL</div>
+        <div class="env-desc">Your Supabase project URL — found in Project Settings → API</div>
+      </div>
+      <div class="env-row">
+        <div class="env-key">NEXT_PUBLIC_SUPABASE_ANON_KEY</div>
+        <div class="env-desc">Supabase anon/public key — safe to expose in the browser</div>
+      </div>
+      <div class="env-row">
+        <div class="env-key">SUPABASE_SERVICE_ROLE_KEY</div>
+        <div class="env-desc">Supabase service role key — server-side only, never expose to browser</div>
+      </div>
+      <div class="env-row">
+        <div class="env-key">RESEND_API_KEY</div>
+        <div class="env-desc">From resend.com dashboard. Server-side only.</div>
+      </div>
+      <div class="env-row">
+        <div class="env-key">NEXT_PUBLIC_APP_URL</div>
+        <div class="env-desc"><code>http://localhost:3000</code> locally, <code>https://ndoors.se</code> in production. Used to build email links.</div>
+      </div>
+    </div>
+
+    <h3 id="urls">URL Structure</h3>
+
+    <table class="data-table">
+      <thead><tr><th>URL</th><th>Who uses it</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td class="td-name">/</td><td class="td-note">Everyone</td><td class="td-note">Marketing / landing page</td></tr>
+        <tr><td class="td-name">/signup</td><td class="td-note">Everyone</td><td class="td-note">Sign up — role selection here</td></tr>
+        <tr><td class="td-name">/login</td><td class="td-note">Existing users</td><td class="td-note">Log in with Google or email</td></tr>
+        <tr><td class="td-name">/dashboard</td><td class="td-note">Recruiter</td><td class="td-note">Overview of all jobs + reference statuses</td></tr>
+        <tr><td class="td-name">/dashboard/jobs/new</td><td class="td-note">Recruiter</td><td class="td-note">Create a new job and get invite link</td></tr>
+        <tr><td class="td-name">/ref/[invite_token]</td><td class="td-note">Applicant</td><td class="td-note">Applicant landing page — verify + add referents</td></tr>
+        <tr><td class="td-name">/confirm/[confirm_token]</td><td class="td-note">Referent</td><td class="td-note">Referent confirmation page — confirm or decline</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="gdpr">GDPR Notes (Swedish Market)</h3>
+
+    <div class="callout warning">
+      <strong>You are handling personal data about third parties</strong> (the referents) who did not sign up for your service. This makes GDPR compliance especially important.
+    </div>
+
+    <p>The minimum you need before showing this to real users:</p>
+
+    <ul class="step-list">
+      <li><div><strong>Privacy Policy page</strong><span>What data you collect, why, how long you keep it, who can request deletion. Use iubenda.com or termly.io to generate a Swedish-language version quickly (€10–20/month).</span></div></li>
+      <li><div><strong>Referent consent on confirmation page</strong><span>The confirmation page already serves as consent — the referent actively clicks to agree. Make the data use clear: "Your name and contact info will be shared with [Recruiter] for [Job] only."</span></div></li>
+      <li><div><strong>Data deletion</strong><span>Add a simple "Request data deletion" email link in the footer. You can handle these manually for MVP. Automate later.</span></div></li>
+      <li><div><strong>Data retention</strong><span>Consider auto-deleting referent data after 6 months of inactivity. Add a <code>cron job</code> in Supabase → Edge Functions for this later.</span></div></li>
+    </ul>
+  </div>
+
+</main>
+
+<script>
+  // Sidebar active state on scroll
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.nav-link');
+
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
