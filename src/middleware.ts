@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that don't require authentication
-const PUBLIC_PATHS = ['/login', '/signup', '/auth', '/ref', '/confirm']
+// /onboarding requires auth but not a profile — keep it out of the protected-only block
+const PUBLIC_PATHS = ['/login', '/signup', '/auth', '/ref', '/confirm', '/onboarding']
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname.startsWith(p))
