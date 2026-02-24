@@ -5,40 +5,55 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
 export async function completeOnboarding(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  console.log('[onboarding] action called')
 
-  if (!user) redirect('/login')
+  const supabase = await createClient()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  console.log('[onboarding] getUser result:', { userId: user?.id, email: user?.email, error: userError?.message })
+
+  if (!user) {
+    console.log('[onboarding] no user — redirecting to /login')
+    redirect('/login')
+  }
 
   const firstName = formData.get('first_name') as string
   const lastName = formData.get('last_name') as string
   const jobTitle = formData.get('job_title') as string | null
   const companyName = formData.get('company_name') as string
 
-  // Find or create company
+  console.log('[onboarding] form data:', { firstName, lastName, jobTitle, companyName })
+
   let companyId: string | null = null
   if (companyName?.trim()) {
-    const { data: existing } = await supabaseAdmin
+    const { data: existing, error: lookupError } = await supabaseAdmin
       .from('companies')
       .select('id')
       .ilike('name', companyName.trim())
       .maybeSingle()
 
+    console.log('[onboarding] company lookup:', { existing, error: lookupError?.message })
+
     if (existing) {
       companyId = existing.id
+      console.log('[onboarding] using existing company:', companyId)
     } else {
-      const { data: newCompany, error } = await supabaseAdmin
+      const { data: newCompany, error: insertError } = await supabaseAdmin
         .from('companies')
         .insert({ name: companyName.trim() })
         .select('id')
         .single()
-      if (error) throw new Error(error.message)
+
+      console.log('[onboarding] company insert:', { newCompany, error: insertError?.message })
+
+      if (insertError) throw new Error(insertError.message)
       companyId = newCompany.id
     }
   }
 
-  // Upsert user profile
-  const { error } = await supabaseAdmin.from('users').upsert({
+  console.log('[onboarding] upserting user with company_id:', companyId)
+
+  const { error: upsertError } = await supabaseAdmin.from('users').upsert({
     id: user.id,
     email: user.email!,
     role: 'recruiter',
@@ -48,7 +63,10 @@ export async function completeOnboarding(formData: FormData) {
     company_id: companyId,
   })
 
-  if (error) throw new Error(error.message)
+  console.log('[onboarding] upsert result:', { error: upsertError?.message })
 
+  if (upsertError) throw new Error(upsertError.message)
+
+  console.log('[onboarding] success — redirecting to /dashboard')
   redirect('/dashboard')
 }

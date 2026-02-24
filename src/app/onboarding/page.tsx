@@ -7,13 +7,21 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    console.log('[onboarding] form submitted')
     try {
       await completeOnboarding(new FormData(e.currentTarget))
-    } catch (err) {
+      console.log('[onboarding] action returned — redirect should have fired')
+    } catch (err: unknown) {
+      const digest = (err as { digest?: string })?.digest ?? ''
+      if (digest.startsWith('NEXT_REDIRECT')) {
+        console.log('[onboarding] redirect in flight — throwing up')
+        throw err
+      }
+      console.error('[onboarding] error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(false)
     }

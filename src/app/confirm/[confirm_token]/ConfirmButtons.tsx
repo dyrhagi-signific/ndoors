@@ -10,9 +10,17 @@ export function ConfirmButtons({ confirmToken }: { confirmToken: string }) {
   async function handleConfirm() {
     setLoading('confirm')
     setError(null)
+    console.log('[ConfirmButtons] confirm clicked, token:', confirmToken)
     try {
       await confirmReferent(confirmToken)
-    } catch (err) {
+      console.log('[ConfirmButtons] confirmReferent returned (redirect should have fired)')
+    } catch (err: unknown) {
+      const digest = (err as { digest?: string })?.digest ?? ''
+      if (digest.startsWith('NEXT_REDIRECT')) {
+        console.log('[ConfirmButtons] redirect caught — throwing up')
+        throw err
+      }
+      console.error('[ConfirmButtons] confirm error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(null)
     }
@@ -21,9 +29,17 @@ export function ConfirmButtons({ confirmToken }: { confirmToken: string }) {
   async function handleDecline() {
     setLoading('decline')
     setError(null)
+    console.log('[ConfirmButtons] decline clicked, token:', confirmToken)
     try {
       await declineReferent(confirmToken)
-    } catch (err) {
+      console.log('[ConfirmButtons] declineReferent returned (redirect should have fired)')
+    } catch (err: unknown) {
+      const digest = (err as { digest?: string })?.digest ?? ''
+      if (digest.startsWith('NEXT_REDIRECT')) {
+        console.log('[ConfirmButtons] redirect caught — throwing up')
+        throw err
+      }
+      console.error('[ConfirmButtons] decline error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(null)
     }

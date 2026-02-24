@@ -55,6 +55,8 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
     setError(null)
 
     const filled = referents.filter((r) => r.first_name && r.last_name && r.email && r.relationship)
+    console.log('[ApplicantForm] submit', { applicantName, applicantEmail, filledReferents: filled.length })
+
     if (!filled.length) {
       setError('Please add at least one referent.')
       setLoading(false)
@@ -68,8 +70,10 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
         applicantEmail,
         referents: filled,
       })
+      console.log('[ApplicantForm] success')
       setSubmitted(true)
     } catch (err) {
+      console.error('[ApplicantForm] error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(false)
     }
@@ -95,7 +99,6 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Applicant info */}
       <div className="rounded-2xl border border-[#e2ddd6] bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-[#1a1a18]">Your details</h2>
         <div className="space-y-3">
@@ -134,7 +137,6 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
         </div>
       </div>
 
-      {/* Referents */}
       <div className="rounded-2xl border border-[#e2ddd6] bg-white p-6">
         <h2 className="mb-1 text-sm font-semibold text-[#1a1a18]">Your references</h2>
         <p className="mb-4 text-xs text-[#777770]">Add 1–3 people who can speak to your work.</p>

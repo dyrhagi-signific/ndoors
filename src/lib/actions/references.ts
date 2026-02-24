@@ -22,30 +22,34 @@ export async function submitReferenceRequest({
   applicantEmail: string
   referents: ReferentInput[]
 }) {
-  // Verify job exists and is active
+  console.log('[submitReferenceRequest] called', { inviteToken, applicantName, applicantEmail, referentCount: referents.length })
+
   const { data: job, error: jobError } = await supabaseAdmin
     .from('jobs')
     .select('id, title, is_active, companies(name)')
     .eq('invite_token', inviteToken)
     .maybeSingle()
 
+  console.log('[submitReferenceRequest] job lookup:', { jobId: job?.id, title: job?.title, is_active: job?.is_active, error: jobError?.message })
+
   if (jobError || !job) throw new Error('Job not found')
   if (!job.is_active) throw new Error('This invite link is no longer active')
 
   const companyName = (job.companies as { name: string } | null)?.name ?? ''
 
-  // Create reference request
   const { data: refRequest, error: refError } = await supabaseAdmin
     .from('reference_requests')
     .insert({ job_id: job.id, applicant_name: applicantName.trim(), applicant_email: applicantEmail.trim() })
     .select('id')
     .single()
 
+  console.log('[submitReferenceRequest] reference_request insert:', { id: refRequest?.id, error: refError?.message })
+
   if (refError) throw new Error(refError.message)
 
-  // Create referent rows and send emails
   for (const ref of referents) {
     const confirmToken = nanoid(16)
+    console.log(`[submitReferenceRequest] inserting referent: ${ref.first_name} ${ref.last_name} <${ref.email}> token=${confirmToken}`)
 
     const { error: refentError } = await supabaseAdmin.from('referents').insert({
       reference_request_id: refRequest.id,
@@ -57,9 +61,11 @@ export async function submitReferenceRequest({
       confirm_token: confirmToken,
     })
 
+    console.log(`[submitReferenceRequest] referent insert result:`, { error: refentError?.message })
+
     if (refentError) throw new Error(refentError.message)
 
-    // Fire and forget — don't block on email errors
+    console.log(`[submitReferenceRequest] sending invite email to ${ref.email}`)
     sendReferentInvite({
       referentEmail: ref.email.trim(),
       referentName: `${ref.first_name} ${ref.last_name}`,
@@ -67,6 +73,12 @@ export async function submitReferenceRequest({
       jobTitle: job.title,
       companyName,
       confirmToken,
-    }).catch(console.error)
+    }).then(() => {
+      console.log(`[submitReferenceRequest] email sent to ${ref.email}`)
+    }).catch((err) => {
+      console.error(`[submitReferenceRequest] email FAILED for ${ref.email}:`, err)
+    })
   }
+
+  console.log('[submitReferenceRequest] complete')
 }

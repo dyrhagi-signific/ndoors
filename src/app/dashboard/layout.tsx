@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { signOut } from '@/lib/auth'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -9,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseAdmin
     .from('users')
     .select('first_name, last_name')
     .eq('id', user.id)
