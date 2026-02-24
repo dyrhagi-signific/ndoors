@@ -93,6 +93,7 @@ export interface Database {
           job_id: string
           applicant_name: string
           applicant_email: string
+          applicant_token: string
           created_at: string
         }
         Insert: {
@@ -100,6 +101,7 @@ export interface Database {
           job_id: string
           applicant_name: string
           applicant_email: string
+          applicant_token: string
           created_at?: string
         }
         Update: {
@@ -107,6 +109,7 @@ export interface Database {
           job_id?: string
           applicant_name?: string
           applicant_email?: string
+          applicant_token?: string
           created_at?: string
         }
       }
@@ -120,6 +123,7 @@ export interface Database {
           relationship: string
           status: ReferentStatus
           confirm_token: string
+          revoke_token: string
           confirmed_at: string | null
           created_at: string
         }
@@ -132,6 +136,7 @@ export interface Database {
           relationship: string
           status?: ReferentStatus
           confirm_token: string
+          revoke_token: string
           confirmed_at?: string | null
           created_at?: string
         }
@@ -144,6 +149,7 @@ export interface Database {
           relationship?: string
           status?: ReferentStatus
           confirm_token?: string
+          revoke_token?: string
           confirmed_at?: string | null
           created_at?: string
         }

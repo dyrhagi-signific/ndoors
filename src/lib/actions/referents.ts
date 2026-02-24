@@ -29,7 +29,7 @@ export async function confirmReferent(confirmToken: string) {
 
   if (referent.status !== 'sent' && referent.status !== 'created') {
     console.log('[confirmReferent] already actioned, status:', referent.status)
-    redirect(`/confirm/${confirmToken}/done?outcome=${referent.status}`)
+    redirect(`/confirm/${confirmToken}`)
   }
 
   const { error: updateError } = await supabaseAdmin
@@ -74,8 +74,8 @@ export async function confirmReferent(confirmToken: string) {
     }
   }
 
-  console.log('[confirmReferent] success — redirecting to done')
-  redirect(`/confirm/${confirmToken}/done?outcome=confirmed`)
+  console.log('[confirmReferent] success — redirecting')
+  redirect(`/confirm/${confirmToken}`)
 }
 
 export async function declineReferent(confirmToken: string) {
@@ -93,7 +93,7 @@ export async function declineReferent(confirmToken: string) {
 
   if (referent.status !== 'sent' && referent.status !== 'created') {
     console.log('[declineReferent] already actioned, status:', referent.status)
-    redirect(`/confirm/${confirmToken}/done?outcome=${referent.status}`)
+    redirect(`/confirm/${confirmToken}`)
   }
 
   const { error: updateError } = await supabaseAdmin
@@ -105,6 +105,6 @@ export async function declineReferent(confirmToken: string) {
 
   if (updateError) throw new Error(updateError.message)
 
-  console.log('[declineReferent] success — redirecting to done')
-  redirect(`/confirm/${confirmToken}/done?outcome=declined`)
+  console.log('[declineReferent] success — redirecting')
+  redirect(`/confirm/${confirmToken}`)
 }

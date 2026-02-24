@@ -37,19 +37,34 @@ export async function submitReferenceRequest({
 
   const companyName = (job.companies as { name: string } | null)?.name ?? ''
 
+  const applicantToken = nanoid(16)
+  console.log('[submitReferenceRequest] generated applicant_token:', applicantToken)
+
   const { data: refRequest, error: refError } = await supabaseAdmin
     .from('reference_requests')
-    .insert({ job_id: job.id, applicant_name: applicantName.trim(), applicant_email: applicantEmail.trim() })
+    .upsert(
+      { job_id: job.id, applicant_name: applicantName.trim(), applicant_email: applicantEmail.trim(), applicant_token: applicantToken },
+      { onConflict: 'job_id,applicant_email' }
+    )
     .select('id')
     .single()
 
-  console.log('[submitReferenceRequest] reference_request insert:', { id: refRequest?.id, error: refError?.message })
+  console.log('[submitReferenceRequest] reference_request upsert:', { id: refRequest?.id, error: refError?.message })
 
   if (refError) throw new Error(refError.message)
 
+  // Clear any existing referents (handles resubmission)
+  const { error: deleteError } = await supabaseAdmin
+    .from('referents')
+    .delete()
+    .eq('reference_request_id', refRequest.id)
+
+  console.log('[submitReferenceRequest] cleared old referents:', { error: deleteError?.message })
+
   for (const ref of referents) {
     const confirmToken = nanoid(16)
-    console.log(`[submitReferenceRequest] inserting referent: ${ref.first_name} ${ref.last_name} <${ref.email}> token=${confirmToken}`)
+    const revokeToken = nanoid(16)
+    console.log(`[submitReferenceRequest] inserting referent: ${ref.first_name} ${ref.last_name} <${ref.email}> confirm=${confirmToken}`)
 
     const { error: refentError } = await supabaseAdmin.from('referents').insert({
       reference_request_id: refRequest.id,
@@ -59,6 +74,7 @@ export async function submitReferenceRequest({
       relationship: ref.relationship,
       status: 'sent',
       confirm_token: confirmToken,
+      revoke_token: revokeToken,
     })
 
     console.log(`[submitReferenceRequest] referent insert result:`, { error: refentError?.message })

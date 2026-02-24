@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { CopyButton } from './CopyButton'
 
 const STATUS_PILL: Record<string, string> = {
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: jobs } = await supabase
+  const { data: jobs } = await supabaseAdmin
     .from('jobs')
     .select(`
       id, title, invite_token, is_active, created_at,
