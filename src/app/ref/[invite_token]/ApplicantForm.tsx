@@ -33,7 +33,7 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
   const [referents, setReferents] = useState<Referent[]>([emptyReferent()])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
+  const [applicantToken, setApplicantToken] = useState<string | null>(null)
 
   function updateReferent(index: number, field: keyof Referent, value: string) {
     setReferents((prev) =>
@@ -64,14 +64,14 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
     }
 
     try {
-      await submitReferenceRequest({
+      const result = await submitReferenceRequest({
         inviteToken,
         applicantName,
         applicantEmail,
         referents: filled,
       })
-      console.log('[ApplicantForm] success')
-      setSubmitted(true)
+      console.log('[ApplicantForm] success', result)
+      setApplicantToken(result.applicantToken)
     } catch (err) {
       console.error('[ApplicantForm] error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -79,7 +79,7 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
     }
   }
 
-  if (submitted) {
+  if (applicantToken) {
     return (
       <div className="rounded-2xl border border-[#e2ddd6] bg-white p-8 text-center">
         <div className="mb-4 flex justify-center">
@@ -90,9 +90,15 @@ export function ApplicantForm({ inviteToken }: { inviteToken: string }) {
           </div>
         </div>
         <h2 className="mb-2 font-serif text-xl font-bold text-[#1a1a18]">All done!</h2>
-        <p className="text-sm text-[#777770]">
+        <p className="mb-6 text-sm text-[#777770]">
           We&apos;ve sent a confirmation request to your references. The recruiter will be notified once they confirm.
         </p>
+        <a
+          href={`/ref/status/${applicantToken}`}
+          className="inline-block rounded-xl bg-[#2d5a3d] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#24482f]"
+        >
+          Track your references
+        </a>
       </div>
     )
   }

@@ -97,4 +97,5 @@ export async function submitReferenceRequest({
   }
 
   console.log('[submitReferenceRequest] complete')
+  return { applicantToken }
 }

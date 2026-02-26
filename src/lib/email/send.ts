@@ -55,6 +55,59 @@ export async function sendReferentInvite({
 }
 
 /**
+ * Email sent to a referent with reference-check questions from the recruiter.
+ */
+export async function sendReferenceQuestions({
+  referentEmail,
+  referentName,
+  applicantName,
+  jobTitle,
+  companyName,
+  questions,
+  recruiterEmail,
+  recruiterName,
+}: {
+  referentEmail: string
+  referentName: string
+  applicantName: string
+  jobTitle: string
+  companyName: string
+  questions: string[]
+  recruiterEmail: string
+  recruiterName: string
+}) {
+  const questionList = questions
+    .map((q, i) => `<p style="margin:0 0 12px"><strong>${i + 1}.</strong> ${q}</p>`)
+    .join('')
+
+  return resend.emails.send({
+    from: FROM,
+    to: referentEmail,
+    replyTo: recruiterEmail,
+    subject: `Reference questions for ${applicantName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a18">
+        <p style="margin-bottom:16px">Hi ${referentName},</p>
+        <p style="margin-bottom:16px">
+          I'm ${recruiterName} from <strong>${companyName}</strong>. You've confirmed that you're happy
+          to be a reference for <strong>${applicantName}</strong> who is applying for
+          <strong>${jobTitle}</strong>.
+        </p>
+        <p style="margin-bottom:16px">
+          I'd love to hear your thoughts on a few questions. Please just reply to this email.
+        </p>
+        <div style="background:#f7f5f0;border-radius:8px;padding:16px 20px;margin-bottom:24px">
+          ${questionList}
+        </div>
+        <p style="color:#777770;font-size:13px">
+          Thank you for taking the time — it really helps us make the right decision.
+        </p>
+      </div>
+    `,
+  })
+}
+
+/**
  * Email sent to the recruiter when a referent confirms.
  */
 export async function sendRecruiterNotification({

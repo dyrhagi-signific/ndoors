@@ -125,6 +125,7 @@ export interface Database {
           confirm_token: string
           revoke_token: string
           confirmed_at: string | null
+          questions_sent_at: string | null
           created_at: string
         }
         Insert: {
@@ -138,6 +139,7 @@ export interface Database {
           confirm_token: string
           revoke_token: string
           confirmed_at?: string | null
+          questions_sent_at?: string | null
           created_at?: string
         }
         Update: {
@@ -151,6 +153,7 @@ export interface Database {
           confirm_token?: string
           revoke_token?: string
           confirmed_at?: string | null
+          questions_sent_at?: string | null
           created_at?: string
         }
       }

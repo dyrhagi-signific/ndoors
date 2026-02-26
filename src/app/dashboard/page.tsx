@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { CopyButton } from './CopyButton'
+import { ConfirmedReferentCard } from './ConfirmedReferentCard'
 
 const STATUS_PILL: Record<string, string> = {
   confirmed: 'bg-green-100 text-green-800',
@@ -21,14 +22,15 @@ export default async function DashboardPage() {
     .select(`
       id, title, invite_token, is_active, created_at,
       reference_requests(
-        id, applicant_name,
-        referents(id, first_name, last_name, status)
+        id, applicant_name, applicant_email, applicant_token,
+        referents(id, first_name, last_name, email, relationship, status, questions_sent_at)
       )
     `)
     .eq('recruiter_id', user.id)
     .order('created_at', { ascending: false })
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const recruiterEmail = user.email ?? ''
 
   return (
     <div>
@@ -78,30 +80,68 @@ export default async function DashboardPage() {
 
                 {requests.length > 0 && (
                   <div className="space-y-3">
-                    {requests.map((req) => (
+                    {requests.map((req) => {
+                      const pendingReferents = (req.referents ?? []).filter(
+                        (r) => r.status === 'sent' || r.status === 'created'
+                      )
+                      const statusUrl = `${appUrl}/ref/status/${req.applicant_token}`
+                      const mailtoSubject = encodeURIComponent(
+                        `Your references for ${job.title}`
+                      )
+                      const mailtoBody = encodeURIComponent(
+                        `Hi ${req.applicant_name},\n\nJust a quick nudge — we're still waiting on some of your references to confirm for the ${job.title} position.\n\nYou can send them a reminder directly from your reference tracking page:\n${statusUrl}\n\nBest regards`
+                      )
+
+                      return (
                       <div key={req.id} className="rounded-xl bg-[#f7f5f0] p-4">
-                        <p className="mb-2 text-sm font-medium text-[#1a1a18]">
-                          {req.applicant_name}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {(req.referents ?? []).map((ref) => (
-                            <div
-                              key={ref.id}
-                              className="flex items-center gap-1.5 rounded-lg border border-[#e2ddd6] bg-white px-3 py-1.5 text-xs"
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-[#1a1a18]">
+                            {req.applicant_name}
+                          </p>
+                          {pendingReferents.length > 0 && (
+                            <a
+                              href={`mailto:${req.applicant_email}?subject=${mailtoSubject}&body=${mailtoBody}`}
+                              className="text-xs text-[#777770] transition hover:text-[#2d5a3d]"
                             >
-                              <span className="text-[#1a1a18]">
-                                {ref.first_name} {ref.last_name}
-                              </span>
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${STATUS_PILL[ref.status] ?? STATUS_PILL.created}`}
+                              Remind applicant
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {(req.referents ?? []).map((ref) =>
+                            ref.status === 'confirmed' ? (
+                              <ConfirmedReferentCard
+                                key={ref.id}
+                                referentId={ref.id}
+                                firstName={ref.first_name}
+                                lastName={ref.last_name}
+                                email={ref.email}
+                                relationship={ref.relationship}
+                                applicantName={req.applicant_name}
+                                jobTitle={job.title}
+                                recruiterEmail={recruiterEmail}
+                                questionsSentAt={ref.questions_sent_at ?? null}
+                              />
+                            ) : (
+                              <div
+                                key={ref.id}
+                                className="flex items-center gap-1.5 rounded-lg border border-[#e2ddd6] bg-white px-3 py-1.5 text-xs"
                               >
-                                {ref.status}
-                              </span>
-                            </div>
-                          ))}
+                                <span className="text-[#1a1a18]">
+                                  {ref.first_name} {ref.last_name}
+                                </span>
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${STATUS_PILL[ref.status] ?? STATUS_PILL.created}`}
+                                >
+                                  {ref.status}
+                                </span>
+                              </div>
+                            )
+                          )}
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
